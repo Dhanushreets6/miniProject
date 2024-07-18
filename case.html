@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyCaseManager</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   
+    <link rel="stylesheet" href="/client/css/case.css">
+    <link rel="stylesheet" href="/server/case.js">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* External CSS  */
+    </style>
+</head>
+
+<body>
+
+    <!-- HTML for Navigation Bar -->
+    <div class="navbar">
+        <nav id="navbar">
+            <div id="logo">
+                <img src="/images/mcmlogo.png" alt="carImage" height="100px" width="100px">
+            </div>
+            <ul>
+                <li class="items"><a href="/client/html/home.html">Home</a></li>
+                <li class="items"><a href="/client/html/about.html">About</a></li>
+                <li class="items"><a href="/client/html/contact.html">Contact</a></li>
+                <li class="items" style="position:absolute; right: 0px; font-size: 2rem; "><a
+                        href="login.html">Login</a></li>
+            </ul>
+    </div>
+    </div>
+    </nav>
+    </div>
+
+    <div class="btn-create">
+            <a href="/client/html/create.html">+</a>
+    </div>
+    
+    <div class="srch" >
+        <input type="text" name="textsrch" id="textsrch" placeholder="Enter caseNumber to search" >
+        <div class="src-btn">
+            <img id="srch-symbol" src="/images/find.png" style="width:100%; height:100%;">
+        </div>
+    </div>
+
+    <div class="case-boxes">
+        <div class="case-header">
+            <div class="boxh">Dates</div>
+            <div class="boxh">Case Number</div>
+            <div class="boxh">Party Name</div>
+            <div class="boxh">status</div>
+            <div class="boxh">Update</div>
+        </div>
+        <div class="container">
+
+        </div>   
+     
+
+    </div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", async()=>{
+
+        let data;
+
+
+        try{
+            const res = await fetch("http://localhost:3000", {
+            method: "GET",
+            mode: "cors",
+            headers: { "Content-Type": "application/json" },
+          });
+          const rsult = await res.json()
+          console.log(rsult.data)
+          data = rsult.data
+          const parentNode = document.querySelector(".container")
+
+          const dateGenerator = (date) =>{
+            const newDate = new Date(date)
+
+            return `${newDate.getDate()}-${newDate.getMonth()}-${newDate.getFullYear()}`
+          }
+
+          data.sort((a,b)=>{
+            return new Date(a.date) - new Date(b.date)
+          })
+          data.forEach(element => {
+                const newTag = document.createElement('div')
+                newTag.className = "case-box"
+                newTag.innerHTML = `
+                    <div class="box caseDate">${dateGenerator(element.date) || "anonymous"}</div>
+                    <div class="box">${element.caseNumber || "anonymous"}</div>
+                    <div class="box">${element.partyName || "anonymous"}</div>
+                    <div class="box caseStatus">${element.status || "anonymous"}</div>
+                    <div class="box" class="update">
+                        <div class="checkbox">
+                            <input type="checkbox" class="imp" value="important"></br>
+                        </div>
+                        <div class="btns"><button class="edit" title = ${element.caseNumber}>Edit</button> 
+                            <button class="delete" title = ${element.caseNumber}>Delete</button> 
+                            </div>
+                    </div>
+                `
+            parentNode.appendChild(newTag)
+          });
+
+
+        }catch(e){
+            console.log(e)
+        }
+
+    
+        const deleteArr = document.querySelectorAll('.delete')
+        const editArr = document.querySelectorAll('.edit')
+        deleteArr.forEach(element => {
+            element.addEventListener('click', async(e)=>{
+                console.log(e.target.title)
+                try{
+                    const res = await fetch("http://localhost:3000/delete", {
+                    method: "POST",
+                    mode: "cors",
+                    body : JSON.stringify({caseNumber : e.target.title}),
+                    headers: { "Content-Type": "application/json" },
+                });
+                const das = await res.json()
+                console.log(das)
+                window.location.reload()
+                }
+                catch(e){
+                    console.log(e)
+                }
+
+            })
+        });
+
+        editArr.forEach(element => {
+            element.addEventListener('click', async(e)=>{
+                console.log(e.target.title)
+                try{
+                    const res = await fetch("http://localhost:3000/delete", {
+                    method: "POST",
+                    mode: "cors",
+                    body : JSON.stringify({caseNumber : e.target.title}),
+                    headers: { "Content-Type": "application/json" },
+                });
+                const das = await res.json()
+                console.log(das)                
+                window.location.href = "/client/html/create.html";
+
+                }
+                catch(e){
+                    console.log(e)
+                }
+
+            })
+        });
+
+
+        const search = document.querySelector('#srch-symbol')
+        search.addEventListener('click' ,() => {
+            const dateGenerator = (date) =>{
+            const newDate = new Date(date)
+
+            return `${newDate.getDate()}-${newDate.getMonth()}-${newDate.getFullYear()}`
+          }
+                const inputData = document.querySelector("#textsrch").value;
+                const newArr = data.filter(obj=> obj.caseNumber === inputData)
+                console.log(newArr)
+                const parentNode = document.querySelector('.container')
+                parentNode.classList.add("display-none")
+
+                const parent = document.querySelector('.case-boxes')
+                newArr.forEach(element =>{
+                    const div = document.createElement('div')
+                    div.className = "case-box"
+                    div.innerHTML = `
+                    <div class="box caseDate">${dateGenerator(element.date) || "anonymous"}</div>
+                    <div class="box">${element.caseNumber || "anonymous"}</div>
+                    <div class="box">${element.partyName || "anonymous"}</div>
+                    <div class="box caseStatus">${element.status || "anonymous"}</div>
+                    <div class="box" class="update">
+                        <div class="checkbox">
+                            <input type="checkbox" class="imp" value="important"></br>
+                        </div>
+                        <div class="btns"><button class="edit" title = ${element.caseNumber}>Edit</button> 
+                            <button class="delete" title = ${element.caseNumber}>Delete</button> 
+                            </div>
+                    </div>
+                `
+                // console.log(parent.lastElementChild.childNodes[2].childNodes[3].innerHTML)
+                console.log(inputData)
+                if(parent.lastElementChild.childNodes[2].childNodes[3].value !== inputData)
+                    parent.appendChild(div)
+                else 
+                    return
+                })
+
+        })
+
+
+    })
+</script>
+</body>
+</html>
